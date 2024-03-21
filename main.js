@@ -39,6 +39,10 @@ function processData(data) {
       return false;
     }
 
+    if (d["Release Date"] === "") {
+      return false;
+    }
+
     return true;
   });
 
@@ -50,7 +54,7 @@ function render(data) {
   console.log(canvas);
 
   const canvasWidth = 800;
-  const canvasHeight = 800;
+  const canvasHeight = 600;
   const paddingLeft = 60;
   const paddingBottom = 60;
   const paddingTop = 20;
@@ -104,16 +108,16 @@ function render(data) {
     .append("text")
     .text("Transistors (million)")
     .attr("x", 400)
-    .attr("y", 800 - 10)
+    .attr("y", canvasHeight - 10)
     .attr("text-anchor", "middle");
 
   canvas
     .append("text")
     .text("Die Size (mm^2)")
     .attr("x", 10)
-    .attr("y", 400)
+    .attr("y", canvasHeight / 2)
     .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90 10 400) translate(0, 10)");
+    .attr("transform", `rotate(-90 10 ${canvasHeight / 2}) translate(0, 10)`);
 }
 
 // for (let i = 0; i < 100; i++) {
