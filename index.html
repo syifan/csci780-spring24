@@ -8,6 +8,8 @@
     <style>
       #tooltip {
         position: absolute;
+        top: -9999px;
+        left: -9999px;
         background: #fff;
         padding: 10px;
         border: 1px solid #000;
@@ -25,7 +27,11 @@
         <div>Die Size:</div>
         <div>Process Size:</div>
       </div>
-      <svg style="width: 800px; height: 800px; background: #f0f0f0"></svg>
+      <button id="by-release-date-btn">By Release Date</button>
+      <button id="by-transistor-btn">By Transistor</button>
+      <svg
+        style="display: block; width: 800px; height: 800px; background: #f0f0f0"
+      ></svg>
     </div>
     <script type="module" src="/main.js"></script>
   </body>

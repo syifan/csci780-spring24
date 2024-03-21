@@ -1,10 +1,23 @@
 import * as d3 from "d3";
 
+let data;
+
 main();
 
 async function main() {
   const data = await getData();
   const filteredData = processData(data);
+
+  document
+    .getElementById("by-release-date-btn")
+    .addEventListener("click", () => {
+      render(filteredData, "Release Date");
+    });
+
+  document.getElementById("by-transistor-btn").addEventListener("click", () => {
+    render(filteredData, "Transistors");
+  });
+
   render(filteredData);
 }
 
@@ -39,13 +52,17 @@ function processData(data) {
       return false;
     }
 
+    if (d["Release Date"] === "") {
+      return false;
+    }
+
     return true;
   });
 
   return filteredData;
 }
 
-function render(data) {
+function render(data, xAxisName) {
   const canvas = d3.select("svg");
   console.log(canvas);
 
@@ -56,10 +73,17 @@ function render(data) {
   const paddingTop = 20;
   const paddingRight = 20;
 
-  const xScale = d3
+  let xScale = d3
     .scaleLog()
     .domain([100, 20000])
     .range([paddingLeft, canvasWidth - paddingRight]);
+
+  if (xAxisName === "Release Date") {
+    xScale = d3
+      .scaleTime()
+      .domain([new Date("1999-01-01"), new Date("2024-01-01")])
+      .range([paddingLeft, canvasWidth - paddingRight]);
+  }
 
   const yScale = d3
     .scaleLinear()
@@ -68,15 +92,50 @@ function render(data) {
 
   const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-  canvas
-    .append("g")
+  let group = canvas.select("#data");
+  if (group.empty()) {
+    group = canvas.append("g").attr("id", "data");
+  }
+
+  group
     .selectAll("circle")
     .data(data)
-    .enter()
-    .append("circle")
+    .join(
+      (enter) =>
+        enter
+          .append("circle")
+          .attr("r", 5)
+          .attr("cx", 0)
+          .attr("cy", (d) => {
+            const dieSize = Number(d["Die Size (mm^2)"]);
+            return yScale(dieSize);
+          })
+          .on("mouseover", (event, d) => {
+            showTooltip(event, d);
+          })
+          .on("mousemove", (event, d) => {
+            showTooltip(event, d);
+          })
+          .on("mouseout", (event, d) => {
+            hideTooltip();
+          }),
+      (update) => update,
+      (exit) =>
+        exit
+          .transition()
+          .duration(1000)
+          .attr("x", canvasWidth - paddingRight)
+          .remove()
+    )
+    .transition()
+    .duration(1000)
     .attr("r", 5)
     .attr("cx", (d) => {
       const trans = Number(d["Transistors (million)"]);
+      const date = new Date(d["Release Date"]);
+      if (xAxisName === "Release Date") {
+        return xScale(date);
+      }
       return xScale(trans);
     })
     .attr("cy", (d) => {
@@ -86,16 +145,27 @@ function render(data) {
     .attr("fill", (d) => {
       return colorScale(d["Process Size (nm)"]);
     })
-    .attr("opacity", "0.1")
-    .on("mouseover", (event, d) => {
-      showTooltip(event, d);
-    })
-    .on("mousemove", (event, d) => {
-      showTooltip(event, d);
-    })
-    .on("mouseout", (event, d) => {
-      hideTooltip();
-    });
+    .attr("opacity", "0.1");
+
+  // circles
+  //   .merge(circlesEnter)
+  //   .transition()
+  //   .duration(1000)
+  //   .attr("cx", (d) => {
+  //     const trans = Number(d["Transistors (million)"]);
+  //     const date = new Date(d["Release Date"]);
+  //     if (xAxisName === "Release Date") {
+  //       return xScale(date);
+  //     }
+  //     return xScale(trans);
+  //   });
+
+  // circles
+  //   .exit()
+  //   .transition()
+  //   .duration(1000)
+  //   .attr("x", canvasWidth - paddingRight)
+  //   .remove();
 
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale);
@@ -109,12 +179,21 @@ function render(data) {
     .attr("transform", `translate(${paddingLeft}, 0)`)
     .call(yAxis);
 
-  canvas
-    .append("text")
-    .text("Transistors (million)")
-    .attr("x", 400)
-    .attr("y", 800 - 10)
-    .attr("text-anchor", "middle");
+  if (xAxisName === "Release Date") {
+    canvas
+      .append("text")
+      .text("Release Date")
+      .attr("x", canvasWidth / 2)
+      .attr("y", canvasHeight - 10)
+      .attr("text-anchor", "middle");
+  } else {
+    canvas
+      .append("text")
+      .text("Transistors (million)")
+      .attr("x", 400)
+      .attr("y", 800 - 10)
+      .attr("text-anchor", "middle");
+  }
 
   canvas
     .append("text")
