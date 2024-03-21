@@ -5,9 +5,39 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
+    <style>
+      #tooltip {
+        position: absolute;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #000;
+        opacity: 0;
+        top: -9999px;
+        left: -9999px;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
+      <div id="tooltip">
+        XXXX Chip<br />
+        Transistors: XXX (million)<br />
+        Die Size: XXX (mm²) <br />
+        Process: XXX nm
+      </div>
+      <div>
+        <button id="release-date-btn">By Release Date</button>
+        <button id="transistor-btn">By Transistors</button>
+      </div>
+      <div>
+        <button id="btn-4nm">4nm</button>
+        <button id="btn-5nm">5nm</button>
+        <button id="btn-7nm">7nm</button>
+        <button id="btn-10nm">10nm</button>
+        <button id="btn-12nm">12nm</button>
+        <button id="btn-14nm">14nm</button>
+      </div>
+
       <svg style="width: 800px; height: 600px; background: #f0f0f0"></svg>
     </div>
     <script type="module" src="/main.js"></script>
