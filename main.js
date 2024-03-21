@@ -58,7 +58,7 @@ function render(data) {
 
   const xScale = d3
     .scaleLog()
-    .domain([10, 20000])
+    .domain([100, 20000])
     .range([paddingLeft, canvasWidth - paddingRight]);
 
   const yScale = d3
@@ -86,7 +86,16 @@ function render(data) {
     .attr("fill", (d) => {
       return colorScale(d["Process Size (nm)"]);
     })
-    .attr("opacity", "0.1");
+    .attr("opacity", "0.1")
+    .on("mouseover", (event, d) => {
+      showTooltip(event, d);
+    })
+    .on("mousemove", (event, d) => {
+      showTooltip(event, d);
+    })
+    .on("mouseout", (event, d) => {
+      hideTooltip();
+    });
 
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale);
@@ -114,6 +123,31 @@ function render(data) {
     .attr("y", 400)
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90 10 400) translate(0, 10)");
+}
+
+function showTooltip(event, d) {
+  const tooltip = d3.select("#tooltip");
+  tooltip
+    .style("opacity", 1)
+    .style("left", event.pageX + 5 + "px")
+    .style("top", event.pageY + 5 + "px")
+    .html(
+      `<div>
+        ${d["Product"]}
+        <br>Transistors: ${d["Transistors (million)"]}
+        <br>Die Size: ${d["Die Size (mm^2)"]}
+        <br>Process Size: ${d["Process Size (nm)"]}
+        <br>Density: ${(
+          d["Transistors (million)"] / d["Die Size (mm^2)"]
+        ).toFixed(2)}
+        <br>Release Date: ${d["Release Date"]}
+      </div>`
+    );
+}
+
+function hideTooltip() {
+  const tooltip = d3.select("#tooltip");
+  tooltip.style("opacity", 0).style("left", "-9999px").style("top", "-9999px");
 }
 
 // for (let i = 0; i < 100; i++) {

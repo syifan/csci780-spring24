@@ -5,9 +5,26 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
+    <style>
+      #tooltip {
+        position: absolute;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #000;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        opacity: 0;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
+      <div id="tooltip">
+        <div>Title</div>
+        <div>Transistor:</div>
+        <div>Die Size:</div>
+        <div>Process Size:</div>
+      </div>
       <svg style="width: 800px; height: 800px; background: #f0f0f0"></svg>
     </div>
     <script type="module" src="/main.js"></script>
