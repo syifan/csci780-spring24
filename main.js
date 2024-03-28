@@ -1,5 +1,13 @@
 import * as d3 from "d3";
 
+let canvas = d3.select("svg");
+const canvasWidth = 800;
+const canvasHeight = 600;
+const paddingLeft = 60;
+const paddingBottom = 60;
+const paddingTop = 20;
+const paddingRight = 20;
+
 let data = [];
 
 const processSizes = [4, 5, 7, 10, 12, 14, 28, 40, 60, 90, 130, 180];
@@ -102,16 +110,6 @@ function processData(data) {
 }
 
 function render(data, xAxisName) {
-  const canvas = d3.select("svg");
-  console.log(canvas);
-
-  const canvasWidth = 800;
-  const canvasHeight = 600;
-  const paddingLeft = 60;
-  const paddingBottom = 60;
-  const paddingTop = 20;
-  const paddingRight = 20;
-
   let xScale = undefined;
   if (xAxisName === "Transistors (million)") {
     xScale = d3
@@ -181,41 +179,81 @@ function render(data, xAxisName) {
       return colorScale(d["Process Size (nm)"]);
     })
     .attr("opacity", "0.1");
-  // .on("mouseover", showTooltip)
-  // .on("mousemove", showTooltip)
-  // .on("mouseout", hideTooltip);
 
+  drawAxis(canvas, xScale, yScale, xAxisName);
+
+  let zoom = d3.zoom().on("zoom", (event) => {
+    console.log(event.transform);
+
+    const newXScale = event.transform.rescaleX(xScale);
+    const newYScale = event.transform.rescaleY(yScale);
+    drawAxis(canvas, newXScale, newYScale, xAxisName);
+
+    circleGroup
+      .selectAll("circle")
+      .attr("cx", (d) => {
+        if (xAxisName === "Release Date") {
+          const date = new Date(d["Release Date"]);
+          return newXScale(date);
+        } else if (xAxisName === "Transistors (million)") {
+          const trans = Number(d["Transistors (million)"]);
+          return newXScale(trans);
+        }
+      })
+      .attr("cy", (d) => {
+        const dieSize = Number(d["Die Size (mm^2)"]);
+        return newYScale(dieSize);
+      });
+  });
+
+  canvas.call(zoom);
+}
+
+function drawAxis(canvas, xScale, yScale, xAxisName) {
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale);
 
-  canvas
-    .append("g")
+  let xAxisGroup = canvas.select("#x-axis");
+  if (xAxisGroup.empty()) {
+    xAxisGroup = canvas.append("g").attr("id", "x-axis");
+  }
+
+  let yAxisGroup = canvas.select("#y-axis");
+  if (yAxisGroup.empty()) {
+    yAxisGroup = canvas.append("g").attr("id", "y-axis");
+  }
+
+  xAxisGroup
     .attr("transform", `translate(0, ${canvasHeight - paddingBottom})`)
     .call(xAxis);
 
-  canvas
-    .append("g")
-    .attr("transform", `translate(${paddingLeft}, 0)`)
-    .call(yAxis);
+  yAxisGroup.attr("transform", `translate(${paddingLeft}, 0)`).call(yAxis);
+
+  let xLabel = canvas.select("#x-label");
+  if (xLabel.empty()) {
+    xLabel = canvas.append("text").attr("id", "x-label");
+  }
+
+  let yLabel = canvas.select("#y-label");
+  if (yLabel.empty()) {
+    yLabel = canvas.append("text").attr("id", "y-label");
+  }
 
   if (xAxisName === "Release Date") {
-    canvas
-      .append("text")
+    xLabel
       .text("Release Date")
       .attr("x", 400)
       .attr("y", canvasHeight - 10)
       .attr("text-anchor", "middle");
   } else if (xAxisName === "Transistors (million)") {
-    canvas
-      .append("text")
+    xLabel
       .text("Transistors (million)")
       .attr("x", 400)
       .attr("y", canvasHeight - 10)
       .attr("text-anchor", "middle");
   }
 
-  canvas
-    .append("text")
+  yLabel
     .text("Die Size (mm^2)")
     .attr("x", 10)
     .attr("y", canvasHeight / 2)
